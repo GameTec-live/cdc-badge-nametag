@@ -1,55 +1,45 @@
 #include <Arduino.h>
 #include <unity.h>
+#include "../test_common.h"
 
+#ifdef TEST_LED_PIN
 
-void test_led_state_high(void)
-{
-  digitalWrite(TEST_LED_PIN, HIGH);
-  delay(1); // seems to need a short delay
-  TEST_ASSERT_EQUAL(HIGH, digitalRead(TEST_LED_PIN));
+void test_pin_mode_output(void) {
+    pinMode(TEST_LED_PIN, OUTPUT);
+    TEST_ASSERT_TRUE(true);
 }
 
-void test_led_state_low(void)
-{
-  digitalWrite(TEST_LED_PIN, LOW);
-  delay(1);
-  TEST_ASSERT_EQUAL(LOW, digitalRead(TEST_LED_PIN));
+void test_led_state_high(void) {
+    digitalWrite(TEST_LED_PIN, HIGH);
+    delay(10);
+    TEST_ASSERT_EQUAL(HIGH, digitalRead(TEST_LED_PIN));
 }
 
-void test_pin_mode(void) {
-  pinMode(TEST_LED_PIN, OUTPUT);
-  TEST_ASSERT_TRUE(true);
+void test_led_state_low(void) {
+    digitalWrite(TEST_LED_PIN, LOW);
+    delay(10);
+    TEST_ASSERT_EQUAL(LOW, digitalRead(TEST_LED_PIN));
 }
 
+#endif
 
-void setup()
-{
-  // NOTE!!! Wait for >2 secs
-  // if board doesn't support software reset via Serial.DTR/RTS
-  delay(2000);
+void setup() {
+    setup_usb_serial();
+    UNITY_BEGIN();
+    #ifndef TEST_LED_PIN
+        Serial.println("SKIPPED: TEST_LED_PIN not defined.");
+    #else
+        RUN_TEST(test_pin_mode_output);
 
-  pinMode(TEST_LED_PIN, OUTPUT);
+        for (int i = 0; i < 5; i++) {
+            RUN_TEST(test_led_state_high);
+            delay(500);
+            RUN_TEST(test_led_state_low);
+            delay(500);
+        }
 
-  UNITY_BEGIN(); // IMPORTANT LINE!
-  RUN_TEST(test_pin_mode);
+    #endif
+    UNITY_END();
 }
 
-uint8_t i = 0;
-uint8_t max_blinks = 5;
-
-void loop()
-{
-  if (i < max_blinks)
-  {
-    RUN_TEST(test_led_state_high);
-    delay(500);
-    RUN_TEST(test_led_state_low);
-    delay(500);
-    i++;
-  }
-  else if (i == max_blinks)
-  {
-    UNITY_END(); // stop unit testing
-  }
-}
-
+void loop() {}
