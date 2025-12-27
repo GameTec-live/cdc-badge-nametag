@@ -1,8 +1,9 @@
-# Badge Firmware
+# CDC badge Firmware
 
+Read more about Critical Decentralisation Cluster [here](https://decentral.community/).
 Minimalistic firmware for CDC badge with e-paper, display, keyboard and TROPIC01 secure element.
 
-# how to update display?
+# How to update display with my name?
 
 go to `lib/cdc-badge/display.h` and change following macros:
 ```
@@ -19,7 +20,7 @@ Rebuild and flash.
 ```cpp
 setup() → badge_init() → app_setup()
    ↓
-loop() → app_loop() → read buttons → update display
+loop() → app_loop() → read buttons
 ```
 
 ## Hardware Components
