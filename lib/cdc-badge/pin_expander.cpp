@@ -44,47 +44,49 @@ char pin_expander_process_irq() {
         uint16_t pressed = TCA.read16();
 
         switch (pressed) {
-        case 0b111111111110:
+        case 0b10111111111110:
             returnedchar = '0';
             break;
-        case 0b111111111101:
+        case 0b10111111111101:
             returnedchar = '1';
             break;
-        case 0b111111111011:
+        case 0b10111111111011:
             returnedchar = '2';
             break;
-        case 0b111111110111:
+        case 0b10111111110111:
             returnedchar = '3';
             break;
-        case 0b111111101111:
+        case 0b10111111101111:
             returnedchar = '4';
             break;
-        case 0b111111011111:
+        case 0b10111111011111:
             returnedchar = '5';
             break;
-        case 0b111110111111:
+        case 0b10111110111111:
             returnedchar = '6';
             break;
-        case 0b111101111111:
+        case 0b10111101111111:
             returnedchar = '7';
             break;
-        case 0b111011111111:
+        case 0b10111011111111:
             returnedchar = '8';
             break;
-        case 0b110111111111:
+        case 0b10110111111111:
             returnedchar = '9';
             break;
-        case 0b011111111111:
+        case 0b10011111111111:
             returnedchar = 'N';
             break;
-        case 0b101111111111:
+        case 0b10101111111111:
             returnedchar = 'Y';
             break;
         default:
             returnedchar = 'x';
             break;
         }
-
-        expanderInterruptOccurred = false;
-        return returnedchar;
+        // Serial.println(pressed, BIN);
     }
+
+    expanderInterruptOccurred = false;
+    return returnedchar;
+}
