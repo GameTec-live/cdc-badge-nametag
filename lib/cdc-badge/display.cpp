@@ -1,51 +1,63 @@
 #include <Arduino.h>
 
-#include "spi_bus.h"
 #include "badge.h"
 #include "display.h"
+#include "spi_bus.h"
+#include "timeout.h"
+#include <settings.h>
 
 GxEPD2_BW<GxEPD2_290_T94_V2, GxEPD2_290_T94_V2::HEIGHT> display(GxEPD2_290_T94_V2(EPD_CS_PIN, EPD_DC_PIN, EPD_RST_PIN,
                                                                                   EPD_BUSY_PIN));
+
+TimeOut osd_timeout;
+
+void home_display() {
+    Serial.println("home_display()");
+    display.firstPage();
+    do {
+        display.setFont(&FreeMonoBold18pt7b);
+        display.fillScreen(GxEPD_WHITE);
+        display.setCursor(5, 20);
+        display.print(DISPLAY_LINE_1);
+
+        display.setFont(&FreeMonoBold12pt7b);
+        display.setCursor(5, 45);
+        display.print(DISPLAY_LINE_1A);
+
+        display.setFont(&FreeMonoBold9pt7b);
+        display.setCursor(5, 65);
+        display.print(DISPLAY_LINE_2);
+
+        display.setCursor(5, 85);
+        display.print(DISPLAY_LINE_3);
+
+        display.setCursor(5, 105);
+        display.print(DISPLAY_LINE_4);
+
+        display.setCursor(5, 125);
+        display.print(DISPLAY_LINE_5);
+
+    } while (display.nextPage());
+}
 
 void display_init() {
 
     Serial.println("display_init()");
 
-    const int PWM_CHANNEL = 0;     // LEDC-channel 0
-    const int PWM_FREQ = 10000;    // 5 kHz freq
-    const int PWM_RESOLUTION = 10; // 10 bit
-
-    ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-
-    ledcAttachPin(EPD_LED_PIN, PWM_CHANNEL);
-
-    // Keep LED off during display update
-    ledcWrite(PWM_CHANNEL, DISPLAY_BACKGROUND_LIGHT_LEVEL);
+    display_show();
 
     // SPI is already initialized in spi_bus_init(), just use it
     display.init(115200, true, 20, false, SPI_Bus, SPISettings(4000000, MSBFIRST, SPI_MODE0));
 
     display.setRotation(1);
     display.setFont(&FreeMonoBold9pt7b);
-    display.setTextColor(GxEPD_WHITE);  // White text on black background
+    display.setTextColor(GxEPD_BLACK); // Black text on white background
 
     // Use partial window for smooth, flicker-free updates (ideal for menus)
     // This avoids the heavy blinking of full refresh mode
     display.setPartialWindow(0, 0, display.width(), display.height());
-    
-    display.firstPage();
-    do {
-        display.fillScreen(GxEPD_BLACK);
-        display.setCursor(10, 30);
-        display.print(DISPLAY_LINE_1);
 
-        display.setCursor(10, 60);
-        display.print(DISPLAY_LINE_2);
-
-        display.setCursor(10, 90);
-        display.print(DISPLAY_LINE_3);
-
-    } while (display.nextPage());
+    home_display();
 
     Serial.println("[SUCCESS] Screen updated");
 }
@@ -60,9 +72,42 @@ void display_show() {
     ledcAttachPin(EPD_LED_PIN, PWM_CHANNEL);
 
     // Keep LED off during display update
-    ledcWrite(PWM_CHANNEL, DISPLAY_BACKGROUND_LIGHT_LEVEL);
+    ledcWrite(PWM_CHANNEL, get_setting_brightness());
 }
 
+void brightness_osd(int brightness) {
+    display.firstPage();
+    do {
+        display.setFont(&FreeMonoBold9pt7b);
+        // centered osd
+        int boxX = (display.width() / 2) - (OSDBOX_W / 2);
+        int boxY = (display.height() / 2) - (OSDBOX_H / 2);
+
+        display.fillRoundRect(boxX, boxY, OSDBOX_W, OSDBOX_H, 5, GxEPD_WHITE);
+        display.drawRoundRect(boxX, boxY, OSDBOX_W, OSDBOX_H, 5, GxEPD_BLACK);
+
+        // Text
+        display.setCursor(boxX + 5, boxY + 20);
+        display.setTextColor(GxEPD_BLACK);
+        display.print("Brightness: ");
+        display.print(brightness);
+
+        // Progress bar
+        int barMargin = 10;
+        int barHeight = 12;
+        int barY = boxY + 30;
+        int barWidth = OSDBOX_W - (2 * barMargin);
+        int filledWidth = (brightness * barWidth) / 1023;
+
+        // Bar outline
+        display.drawRect(boxX + barMargin, barY, barWidth, barHeight, GxEPD_BLACK);
+        // Filled portion
+        display.fillRect(boxX + barMargin + 1, barY + 1, filledWidth - 2, barHeight - 2, GxEPD_BLACK);
+
+    } while (display.nextPage());
+    osd_timeout.cancel();
+    osd_timeout.timeOut(2000, home_display);
+}
 /*
 void test_gpio_led_output(void) {
     Serial.println("[TEST] 5 second LED test");
