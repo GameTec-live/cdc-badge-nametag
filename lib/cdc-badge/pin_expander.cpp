@@ -84,7 +84,7 @@ char pin_expander_process_irq() {
             returnedchar = 'x';
             break;
         }
-        // Serial.println(state->keyboard, BIN);
+        // Serial.println(pressed, BIN);
     }
 
     expanderInterruptOccurred = false;
