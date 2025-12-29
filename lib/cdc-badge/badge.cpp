@@ -1,5 +1,6 @@
 #include "badge.h"
 #include "i2c_bus.h"
+#include "settings.h"
 #include "spi_bus.h"
 
 void badge_init() {
@@ -34,6 +35,14 @@ void badge_init() {
     if (!pin_expander_init()) {
         Serial.println("ERROR: Pin expander initialization failed!");
         // Continue anyway - GPIO expander features may not work
+    } else {
+        Serial.println("  OK");
+    }
+
+    // Settings init
+    if (!settings_init()) {
+        Serial.println("ERROR: Settings initialization failed!");
+        // Continue anyway - default settings will be used
     } else {
         Serial.println("  OK");
     }

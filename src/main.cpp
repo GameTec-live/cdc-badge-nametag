@@ -39,6 +39,7 @@
 
 #include "app.h"
 #include "badge.h"
+#include "timeout.h"
 
 app_state_t app_state;
 void setup() {
@@ -54,4 +55,5 @@ void loop() {
 
     // Loop through the all inputs and process the aplication outputs
     app_loop(&app_state);
+    TimeOut::handler();
 }
