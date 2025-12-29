@@ -18,7 +18,6 @@
 #define DISPLAY_LINE_3 "Line3"
 #define DISPLAY_LINE_4 "Line4"
 #define DISPLAY_LINE_5 "Line5"
-#define DISPLAY_LINE_6 "Line6"
 
 void display_init();
 void display_show();
